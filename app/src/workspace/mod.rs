@@ -1017,18 +1017,6 @@ pub fn init(app: &mut AppContext) {
         .with_context_predicate(id!("Workspace"))
         .with_custom_action(CustomAction::SaveCurrentConfig)
         .with_enabled(|| ContextFlag::LaunchConfigurations.is_enabled()),
-        EditableBinding::new(
-            // If you rename this name, please update the name in command_palette/action/data_source.rs
-            "workspace:search_drive",
-            "Search Warp Drive",
-            WorkspaceAction::OpenPalette {
-                mode: PaletteMode::WarpDrive,
-                source: PaletteSource::Keybinding,
-                query: None,
-            },
-        )
-        .with_context_predicate(id!("Workspace"))
-        .with_custom_action(CustomAction::SearchDrive),
     ]);
 
     if FeatureFlag::Autoupdate.is_enabled() {
@@ -1053,14 +1041,6 @@ pub fn init(app: &mut AppContext) {
         ]);
     }
 
-    app.register_editable_bindings([EditableBinding::new(
-        "workspace:log_out",
-        "Log out",
-        WorkspaceAction::LogOut,
-    )
-    .with_group(bindings::BindingGroup::Settings.as_str())
-    .with_context_predicate(id!("Workspace") & !id!("IsAnonymousUser"))]);
-
     if !FeatureFlag::AvatarInTabBar.is_enabled() {
         app.register_editable_bindings([EditableBinding::new(
             "workspace:toggle_resource_center",
@@ -1072,15 +1052,6 @@ pub fn init(app: &mut AppContext) {
         .with_custom_action(CustomAction::ToggleResourceCenter)]);
     }
 
-    if cfg!(not(target_family = "wasm")) {
-        app.register_editable_bindings([EditableBinding::new(
-            "workspace:export_all_warp_drive_objects",
-            "Export all Warp Drive objects",
-            WorkspaceAction::ExportAllWarpDriveObjects,
-        )
-        .with_group(bindings::BindingGroup::Settings.as_str())
-        .with_context_predicate(id!("Workspace") & id!(flags::ENABLE_WARP_DRIVE))]);
-    }
 
     // CLI install/uninstall actions (macOS only)
     #[cfg(target_os = "macos")]

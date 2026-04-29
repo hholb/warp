@@ -17339,13 +17339,7 @@ impl Workspace {
             );
         }
 
-        if FeatureFlag::AvatarInTabBar.is_enabled() {
-            target.add_child(
-                Container::new(self.render_avatar_button(appearance, ctx))
-                    .with_margin_left(TAB_BAR_PADDING_LEFT)
-                    .finish(),
-            );
-        } else {
+        {
             let resource_center_closed = !self.current_workspace_state.is_resource_center_open;
             if resource_center_closed && ContextFlag::WarpEssentials.is_enabled() {
                 target.add_child(

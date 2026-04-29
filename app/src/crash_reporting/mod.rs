@@ -180,69 +180,9 @@ impl ToSentryTags for CrashRecoveryMetadata {
 
 /// Initializes the crash reporting susbsystem.  Returns whether or not crash
 /// reporting is active.
-pub(crate) fn init(ctx: &mut AppContext) -> bool {
-    if !FeatureFlag::CrashReporting.is_enabled() {
-        log::info!("Crash reporting FeatureFlag is disabled; not initializing sentry.");
-        return false;
-    }
-
-    let window_manager = WindowManager::handle(ctx);
-    ctx.subscribe_to_model(&window_manager, |_, event, _| match event {
-        StateEvent::ValueChanged { current, previous } => {
-            if current.stage != previous.stage {
-                set_lifecycle_stage(current.stage);
-            }
-        }
-    });
-
-    let antivirus_info = AntivirusInfo::handle(ctx);
-    ctx.subscribe_to_model(&antivirus_info, |antivirus_info, event, ctx| match event {
-        AntivirusInfoEvent::ScannedComplete => {
-            let antivirus_info = antivirus_info.as_ref(ctx);
-            set_antivirus_info(antivirus_info);
-        }
-    });
-
-    let is_crash_reporting_enabled = is_crash_reporting_enabled(ctx);
-
-    if is_crash_reporting_enabled {
-        AuthStateProvider::handle(ctx).update(ctx, |auth_state_provider, ctx| {
-            init_sentry(
-                auth_state_provider.get().user_id(),
-                auth_state_provider.get().user_email(),
-                ctx,
-            );
-        });
-    } else {
-        log::info!("Crash reporting setting is disabled; not initializing sentry.");
-    }
-
-    set_windowing_system(ctx.windows().windowing_system());
-
-    let privacy_settings = PrivacySettings::handle(ctx);
-    ctx.subscribe_to_model(&privacy_settings, |_, event, ctx| {
-        if let &PrivacySettingsChangedEvent::UpdateIsCrashReportingEnabled { new_value, .. } = event
-        {
-            if new_value {
-                AuthStateProvider::handle(ctx).update(ctx, |auth_state_provider, ctx| {
-                    init_sentry(
-                        auth_state_provider.get().user_id(),
-                        auth_state_provider.get().user_email(),
-                        ctx,
-                    );
-                });
-            } else {
-                uninit_sentry();
-            }
-        }
-    });
-
-    // Having initialized the SDK above, we can now set the initial value of
-    // some tags.
-    set_lifecycle_stage(window_manager.as_ref(ctx).stage());
-    init_virtual_environment_tag(ctx);
-
-    is_crash_reporting_enabled
+pub(crate) fn init(_ctx: &mut AppContext) -> bool {
+    log::info!("Crash reporting disabled.");
+    false
 }
 
 #[derive(Default)]
